@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -35,7 +36,9 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -79,11 +82,18 @@ public class Camera2Activity extends AppCompatActivity {
     private boolean mFlashSupported;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
+    private int DSI_height;
+    private int DSI_width;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        DSI_height = displayMetrics.heightPixels;
+        DSI_width = displayMetrics.widthPixels;
 
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
@@ -106,6 +116,25 @@ public class Camera2Activity extends AppCompatActivity {
         flash.setOnClickListener(v -> {
 
         });
+    }
+    private void setAspectRatioTextureView(int ResolutionWidth , int ResolutionHeight )
+    {
+        if(ResolutionWidth > ResolutionHeight){
+            int newWidth = DSI_width;
+            int newHeight = ((DSI_width * ResolutionWidth)/ResolutionHeight);
+            updateTextureViewSize(newWidth,newHeight);
+
+        }else {
+            int newWidth = DSI_width;
+            int newHeight = ((DSI_width * ResolutionHeight)/ResolutionWidth);
+            updateTextureViewSize(newWidth,newHeight);
+        }
+
+    }
+
+    private void updateTextureViewSize(int viewWidth, int viewHeight) {
+        Log.e("App", "TextureView Width : " + viewWidth + " TextureView Height : " + viewHeight);
+        textureView.setLayoutParams(new LinearLayout.LayoutParams(viewWidth, viewHeight));
     }
     public void reopenCamera() {
         if (textureView.isAvailable()) {
@@ -195,17 +224,12 @@ public class Camera2Activity extends AppCompatActivity {
             captureBuilder.addTarget(imageReader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+            Log.e("App", rotation+"");
+            int surfaceRotation = ORIENTATIONS.get(rotation);
+            int sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            Log.e("App" , ""+surfaceRotation + " : " + sensorOrientation);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
 
-//            File pictureFileDir = new File(getCacheDir()+File.separator+"images");
-//            Log.e("path",""+pictureFileDir);
-//            pictureFileDir.mkdirs();
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-//            String date = dateFormat.format(new Date());
-//            String photoFile = "Picture_" + date + ".jpg";
-//            String filename = pictureFileDir.getPath() + File.separator + photoFile;
-//            final File file = new File(filename);
-//            Log.e("App", "Filepath while creating file : " + file.getPath());
             final File file = new File(getCacheDir() + "/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -314,6 +338,8 @@ public class Camera2Activity extends AppCompatActivity {
             StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map!=null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
+            Log.e("APP-ImageDimen", imageDimension +"");
+            setAspectRatioTextureView(imageDimension.getHeight(),imageDimension.getWidth());
 
             if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
