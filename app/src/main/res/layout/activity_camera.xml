@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:background="@color/cardview_light_background">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8"
+        android:gravity="center">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="25dp"
+            app:cardElevation="6dp">
+
+            <ImageView
+                android:id="@+id/preview_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:layout_margin="25dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="start">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="7dp"
+                app:cardCornerRadius="25dp"
+                android:background="@color/white"
+                app:cardBackgroundColor="@color/white"
+                android:layout_gravity="bottom">
+
+                <ImageButton
+                    android:id="@+id/flip_camera_button"
+                    android:onClick="onFlipCamera"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/buttonColor"
+                    android:src="@drawable/ic_flip_camera_black"/>
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="4"
+            android:gravity="center">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="7dp"
+                app:cardCornerRadius="25dp"
+                android:layout_gravity="bottom"
+                android:background="@color/white"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageButton
+                    android:id="@+id/capture_button"
+                    android:onClick="onCaptureClick"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/buttonColor"
+                    android:src="@drawable/ic_photo_camera_black"/>
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="end">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="7dp"
+                app:cardCornerRadius="25dp"
+                android:layout_gravity="bottom"
+                android:background="@color/white"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageButton
+                    android:id="@+id/toggle_flash_button"
+                    android:onClick="onFlashButtonClick"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/buttonColor"
+                    android:src="@drawable/ic_flash_on_black_24dp"/>
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
