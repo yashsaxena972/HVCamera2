@@ -23,10 +23,11 @@
             app:cardCornerRadius="25dp"
             app:cardElevation="6dp">
 
-            <ImageView
-                android:id="@+id/preview_image_view"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:id="@+id/preview_linear_layout"/>
 
         </androidx.cardview.widget.CardView>
 
@@ -56,10 +57,9 @@
 
                 <ImageButton
                     android:id="@+id/flip_camera_button"
-                    android:onClick="onFlipCamera"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/buttonColor"
+                    android:background="@color/white"
                     android:src="@drawable/ic_flip_camera_black"/>
 
             </androidx.cardview.widget.CardView>
@@ -83,10 +83,9 @@
 
                 <ImageButton
                     android:id="@+id/capture_button"
-                    android:onClick="onCaptureClick"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/buttonColor"
+                    android:background="@color/white"
                     android:src="@drawable/ic_photo_camera_black"/>
 
             </androidx.cardview.widget.CardView>
@@ -110,10 +109,9 @@
 
                 <ImageButton
                     android:id="@+id/toggle_flash_button"
-                    android:onClick="onFlashButtonClick"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/buttonColor"
+                    android:background="@color/white"
                     android:src="@drawable/ic_flash_on_black_24dp"/>
 
             </androidx.cardview.widget.CardView>
