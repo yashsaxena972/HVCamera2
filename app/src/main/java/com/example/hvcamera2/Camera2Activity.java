@@ -34,6 +34,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
@@ -50,6 +51,7 @@ import java.util.List;
 public class Camera2Activity extends AppCompatActivity {
 
     private TextureView textureView;
+    private ImageButton flip, cameraClick, flash;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -79,17 +81,18 @@ public class Camera2Activity extends AppCompatActivity {
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
+        flip = findViewById(R.id.flip_camera_button);
+        cameraClick = findViewById(R.id.capture_button);
+        flash = findViewById(R.id.toggle_flash_button);
+        flip.setOnClickListener(v -> {
 
-    }
-    public void onFlashButtonClick(View view) {
+        });
+        cameraClick.setOnClickListener(v -> takePicture());
+        flash.setOnClickListener(v -> {
+
+        });
     }
 
-    public void onCaptureClick(View view) {
-        takePicture();
-    }
-
-    public void onFlipCamera(View view) {
-    }
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {

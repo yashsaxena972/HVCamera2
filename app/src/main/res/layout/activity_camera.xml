@@ -27,7 +27,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:id="@+id/preview_linear_layout"/>
+                android:id="@+id/preview_linear_layout">
+                <TextureView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/texture"/>
+            </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
