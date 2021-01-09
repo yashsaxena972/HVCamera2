@@ -79,7 +79,7 @@ public class Camera2Activity extends AppCompatActivity {
     private ImageReader imageReader;
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
-    private boolean mFlashSupported;
+    private boolean flashStatus = false;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     private int DSI_height;
@@ -112,8 +112,14 @@ public class Camera2Activity extends AppCompatActivity {
                 reopenCamera();
             }
         });
-        cameraClick.setOnClickListener(v -> takePicture());
+        cameraClick.setOnClickListener(v -> takePicture(flashStatus));
         flash.setOnClickListener(v -> {
+            if(flashStatus){
+                flash.setImageResource(R.drawable.ic_flash_off_black_24dp);
+            }else{
+                flash.setImageResource(R.drawable.ic_flash_on_black_24dp);
+            }
+            flashStatus = !flashStatus;
 
         });
     }
@@ -199,7 +205,7 @@ public class Camera2Activity extends AppCompatActivity {
         }
 
     }
-    protected void takePicture() {
+    protected void takePicture(boolean flashStatus) {
         if (cameraDevice == null) {
             Log.e("App", "Camera is null");
         }
@@ -222,14 +228,20 @@ public class Camera2Activity extends AppCompatActivity {
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
             final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(cameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(imageReader.getSurface());
+            if(flashStatus){
+                captureRequestBuilder.set(CaptureRequest.FLASH_MODE , CameraMetadata.FLASH_MODE_SINGLE);
+            }
+            else{
+                captureRequestBuilder.set(CaptureRequest.FLASH_MODE , CameraMetadata.FLASH_MODE_OFF);
+            }
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             Log.e("App", rotation+"");
             int surfaceRotation = ORIENTATIONS.get(rotation);
             int sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             Log.e("App" , ""+surfaceRotation + " : " + sensorOrientation);
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
-
+//            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,270);
             final File file = new File(getCacheDir() + "/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
