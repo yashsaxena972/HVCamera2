@@ -25,7 +25,6 @@ public class ReviewActivity extends AppCompatActivity {
         closeButton = findViewById(R.id.close_button);
 
         image_path = getIntent().getStringExtra("imagePath");
-        Log.e("App", image_path);
         Bitmap bitmap = BitmapFactory.decodeFile(image_path);
         reviewImageView.setImageBitmap(bitmap);
 

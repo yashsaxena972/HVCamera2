@@ -9,7 +9,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -41,6 +44,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -120,7 +124,6 @@ public class Camera2Activity extends AppCompatActivity {
                 flash.setImageResource(R.drawable.ic_flash_on_black_24dp);
             }
             flashStatus = !flashStatus;
-
         });
     }
     private void setAspectRatioTextureView(int ResolutionWidth , int ResolutionHeight )
@@ -241,7 +244,7 @@ public class Camera2Activity extends AppCompatActivity {
             int sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             Log.e("App" , ""+surfaceRotation + " : " + sensorOrientation);
 //            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,270);
+//            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));
             final File file = new File(getCacheDir() + "/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -253,7 +256,17 @@ public class Camera2Activity extends AppCompatActivity {
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
-                        save(bytes);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes , 0, bytes.length);
+                        Matrix matrix = new Matrix();
+                        matrix.postRotate(90);
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
+                        Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byte[] byteArray = stream.toByteArray();
+                        rotatedBitmap.recycle();
+
+                        save(byteArray);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -276,6 +289,35 @@ public class Camera2Activity extends AppCompatActivity {
                             output.close();
                         }
                     }
+                    File file2 = getOutputMediaFile();
+                    FileOutputStream output2 = null;
+                    try {
+                        output2 = new FileOutputStream(file2);
+                        output2.write(bytes);
+                        output2.close();
+                    } finally {
+                        if (output2 != null) {
+                            output2.close();
+                        }
+                    }
+                }
+                private  File getOutputMediaFile(){
+                    File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                            + "/Android/data/"
+                            + getApplicationContext().getPackageName()
+                            + "/Files");
+                    // Create the storage directory if it does not exist
+                    if (! mediaStorageDir.exists()){
+                        if (! mediaStorageDir.mkdirs()){
+                            return null;
+                        }
+                    }
+                    // Create a media file name
+                    String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
+                    File mediaFile;
+                    String mImageName="MI_"+ timeStamp +".jpg";
+                    mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+                    return mediaFile;
                 }
             };
             imageReader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
