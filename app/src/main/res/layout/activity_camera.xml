@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".Camera2Activity"
     android:background="@color/cardview_light_background">
 
     <LinearLayout
@@ -23,10 +23,15 @@
             app:cardCornerRadius="25dp"
             app:cardElevation="6dp">
 
-            <ImageView
-                android:id="@+id/preview_image_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+<!--            <ImageView-->
+<!--                android:id="@+id/preview_image_view"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"/>-->
+                <TextureView
+                    android:id="@+id/texture"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentTop="true"/>
 
         </androidx.cardview.widget.CardView>
 
