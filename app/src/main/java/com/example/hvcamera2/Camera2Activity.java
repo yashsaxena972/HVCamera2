@@ -154,19 +154,6 @@ public class Camera2Activity extends AppCompatActivity {
             cameraDevice = null;
         }
     };
-    final CameraCaptureSession.CaptureCallback captureCallbackListener = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            Toast.makeText(Camera2Activity.this, "CaptureSessionCallback-Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
-//            closeCamera();
-//            Intent intent = new Intent(Camera2Activity.this, ReviewActivity.class);
-//            intent.putExtra("imagePath", file.getPath());
-//            startActivity(intent);
-//            createCameraPreview();
-        }
-    };
-
     protected void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("Camera Background");
         mBackgroundThread.start();
@@ -223,6 +210,7 @@ public class Camera2Activity extends AppCompatActivity {
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
+                    Log.e("App", "Inside imageReader");
                     Image image = null;
                     try {
                         image = reader.acquireLatestImage();
@@ -259,6 +247,7 @@ public class Camera2Activity extends AppCompatActivity {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
+                    Log.e("App", "Inside onCaptureCompleted");
                     Log.e("App", "CamAct filepath"+ file.getPath());
 //                    Toast.makeText(Camera2Activity.this, "captureListener - Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
 //                    createCameraPreview();
@@ -266,6 +255,7 @@ public class Camera2Activity extends AppCompatActivity {
                     Intent intent = new Intent(Camera2Activity.this, ReviewActivity.class);
                     intent.putExtra("imagePath", file.getPath());
                     startActivity(intent);
+
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -282,6 +272,7 @@ public class Camera2Activity extends AppCompatActivity {
                 public void onConfigureFailed(CameraCaptureSession session) {
                 }
             }, mBackgroundHandler);
+
 
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -325,8 +316,9 @@ public class Camera2Activity extends AppCompatActivity {
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
 
             if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+            && ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
             }
             cameraManager.openCamera(cameraId, stateCallback, null);
         } catch (CameraAccessException e) {
