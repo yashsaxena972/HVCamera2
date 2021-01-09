@@ -253,19 +253,24 @@ public class Camera2Activity extends AppCompatActivity {
                     Image image = null;
                     try {
                         image = reader.acquireLatestImage();
+
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
                         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes , 0, bytes.length);
                         Matrix matrix = new Matrix();
                         matrix.postRotate(90);
-                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
-                        Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+//                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
+                        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
                         rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                         byte[] byteArray = stream.toByteArray();
                         rotatedBitmap.recycle();
-
+//                        byte[] byteArray;
+//                        int size = bitmap.getRowBytes() * bitmap.getHeight();
+//                        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+//                        bitmap.copyPixelsToBuffer(byteBuffer);
+//                        byteArray = byteBuffer.array();
                         save(byteArray);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
