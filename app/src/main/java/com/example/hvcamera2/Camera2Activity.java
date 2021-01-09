@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -43,8 +44,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -61,6 +64,10 @@ public class Camera2Activity extends AppCompatActivity {
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
     private String cameraId;
+    public static final String CAMERA_FRONT = "1";
+    public static final String CAMERA_BACK = "0";
+
+    private String cameraFace = CAMERA_BACK;
     protected CameraDevice cameraDevice;
     protected CameraCaptureSession cameraCaptureSessions;
     protected CaptureRequest captureRequest;
@@ -85,12 +92,27 @@ public class Camera2Activity extends AppCompatActivity {
         cameraClick = findViewById(R.id.capture_button);
         flash = findViewById(R.id.toggle_flash_button);
         flip.setOnClickListener(v -> {
-
+            if (cameraFace.equals(CAMERA_FRONT)) {
+                cameraFace = CAMERA_BACK;
+                closeCamera();
+                reopenCamera();
+            } else if (cameraFace.equals(CAMERA_BACK)) {
+                cameraFace = CAMERA_FRONT;
+                closeCamera();
+                reopenCamera();
+            }
         });
         cameraClick.setOnClickListener(v -> takePicture());
         flash.setOnClickListener(v -> {
 
         });
+    }
+    public void reopenCamera() {
+        if (textureView.isAvailable()) {
+            openCamera();
+        } else {
+            textureView.setSurfaceTextureListener(textureListener);
+        }
     }
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -136,8 +158,12 @@ public class Camera2Activity extends AppCompatActivity {
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
-            Toast.makeText(Camera2Activity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
+            Toast.makeText(Camera2Activity.this, "CaptureSessionCallback-Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
+//            closeCamera();
+//            Intent intent = new Intent(Camera2Activity.this, ReviewActivity.class);
+//            intent.putExtra("imagePath", file.getPath());
+//            startActivity(intent);
+//            createCameraPreview();
         }
     };
 
@@ -155,6 +181,7 @@ public class Camera2Activity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
     protected void takePicture() {
         if (cameraDevice == null) {
@@ -182,6 +209,16 @@ public class Camera2Activity extends AppCompatActivity {
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+
+//            File pictureFileDir = new File(getCacheDir()+File.separator+"images");
+//            Log.e("path",""+pictureFileDir);
+//            pictureFileDir.mkdirs();
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+//            String date = dateFormat.format(new Date());
+//            String photoFile = "Picture_" + date + ".jpg";
+//            String filename = pictureFileDir.getPath() + File.separator + photoFile;
+//            final File file = new File(filename);
+//            Log.e("App", "Filepath while creating file : " + file.getPath());
             final File file = new File(getCacheDir() + "/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -205,10 +242,11 @@ public class Camera2Activity extends AppCompatActivity {
                 }
 
                 private void save(byte[] bytes) throws IOException {
-                    OutputStream output = null;
+                    FileOutputStream output = null;
                     try {
                         output = new FileOutputStream(file);
                         output.write(bytes);
+                        output.close();
                     } finally {
                         if (output != null) {
                             output.close();
@@ -221,8 +259,13 @@ public class Camera2Activity extends AppCompatActivity {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Toast.makeText(Camera2Activity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
+                    Log.e("App", "CamAct filepath"+ file.getPath());
+//                    Toast.makeText(Camera2Activity.this, "captureListener - Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
+//                    createCameraPreview();
+//                    closeCamera();
+                    Intent intent = new Intent(Camera2Activity.this, ReviewActivity.class);
+                    intent.putExtra("imagePath", file.getPath());
+                    startActivity(intent);
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -275,7 +318,7 @@ public class Camera2Activity extends AppCompatActivity {
         CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
         try {
-            cameraId = cameraManager.getCameraIdList()[0];
+            cameraId = cameraManager.getCameraIdList()[Integer.valueOf(cameraFace)];
             CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map!=null;
@@ -302,7 +345,8 @@ public class Camera2Activity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private void closeCamera() {
+    protected void closeCamera() {
+        Log.e("App", "cameraClose()");
         if (null != cameraDevice) {
             cameraDevice.close();
             cameraDevice = null;
@@ -337,7 +381,7 @@ public class Camera2Activity extends AppCompatActivity {
     @Override
     protected void onPause() {
         Log.e("App", "onPause");
-        //closeCamera();
+        closeCamera();
         stopBackgroundThread();
         super.onPause();
     }

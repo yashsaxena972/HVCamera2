@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -24,6 +25,7 @@ public class ReviewActivity extends AppCompatActivity {
         closeButton = findViewById(R.id.close_button);
 
         image_path = getIntent().getStringExtra("imagePath");
+        Log.e("App", image_path);
         Bitmap bitmap = BitmapFactory.decodeFile(image_path);
         reviewImageView.setImageBitmap(bitmap);
 
