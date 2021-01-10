@@ -126,31 +126,6 @@ public class Camera2Activity extends AppCompatActivity {
             flashStatus = !flashStatus;
         });
     }
-    private void setAspectRatioTextureView(int ResolutionWidth , int ResolutionHeight )
-    {
-        if(ResolutionWidth > ResolutionHeight){
-            int newWidth = DSI_width;
-            int newHeight = ((DSI_width * ResolutionWidth)/ResolutionHeight);
-            updateTextureViewSize(newWidth,newHeight);
-
-        }else {
-            int newWidth = DSI_width;
-            int newHeight = ((DSI_width * ResolutionHeight)/ResolutionWidth);
-            updateTextureViewSize(newWidth,newHeight);
-        }
-
-    }
-
-    private void updateTextureViewSize(int viewWidth, int viewHeight) {
-        textureView.setLayoutParams(new LinearLayout.LayoutParams(viewWidth, viewHeight));
-    }
-    public void reopenCamera() {
-        if (textureView.isAvailable()) {
-            openCamera();
-        } else {
-            textureView.setSurfaceTextureListener(textureListener);
-        }
-    }
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -191,6 +166,58 @@ public class Camera2Activity extends AppCompatActivity {
             cameraDevice = null;
         }
     };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == REQUEST_CAMERA_PERMISSION){
+            if(grantResults[0] == PackageManager.PERMISSION_DENIED){
+                Toast.makeText(this, "Please grant the permission, Closing the app now", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("App", "onResume");
+        startBackgroundThread();
+        if (textureView.isAvailable()) {
+            openCamera();
+        } else {
+            textureView.setSurfaceTextureListener(textureListener);
+        }
+    }
+    @Override
+    protected void onPause() {
+        Log.e("App", "onPause");
+        closeCamera();
+        stopBackgroundThread();
+        super.onPause();
+    }
+
+    private void setAspectRatioTextureView(int ResolutionWidth , int ResolutionHeight ) {
+        if(ResolutionWidth > ResolutionHeight){
+            int newWidth = DSI_width;
+            int newHeight = ((DSI_width * ResolutionWidth)/ResolutionHeight);
+            updateTextureViewSize(newWidth,newHeight);
+
+        }else {
+            int newWidth = DSI_width;
+            int newHeight = ((DSI_width * ResolutionHeight)/ResolutionWidth);
+            updateTextureViewSize(newWidth,newHeight);
+        }
+
+    }
+    private void updateTextureViewSize(int viewWidth, int viewHeight) {
+        textureView.setLayoutParams(new LinearLayout.LayoutParams(viewWidth, viewHeight));
+    }
+    public void reopenCamera() {
+        if (textureView.isAvailable()) {
+            openCamera();
+        } else {
+            textureView.setSurfaceTextureListener(textureListener);
+        }
+    }
     protected void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("Camera Background");
         mBackgroundThread.start();
@@ -206,6 +233,24 @@ public class Camera2Activity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+    protected   File getOutputMediaFile(){
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getApplicationContext().getPackageName()
+                + "/Files");
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                return null;
+            }
+        }
+        File mediaFile;
+        // Create a media file name
+        /*String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
+        String mImageName="MI_"+ timeStamp +".jpg";*/
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "pic.jpg");
+        return mediaFile;
     }
     protected void takePicture(boolean flashStatus) {
         if (cameraDevice == null) {
@@ -242,7 +287,7 @@ public class Camera2Activity extends AppCompatActivity {
             int sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);*/
             /*captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));*/
-            final File file = new File(getCacheDir() + "/pic.jpg");
+            final File file = getOutputMediaFile();
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -290,7 +335,7 @@ public class Camera2Activity extends AppCompatActivity {
                             output.close();
                         }
                     }
-                    File file2 = getOutputMediaFile();
+                    /*File file2 = getOutputMediaFile();
                     FileOutputStream output2 = null;
                     try {
                         output2 = new FileOutputStream(file2);
@@ -300,25 +345,7 @@ public class Camera2Activity extends AppCompatActivity {
                         if (output2 != null) {
                             output2.close();
                         }
-                    }
-                }
-                private  File getOutputMediaFile(){
-                    File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
-                            + "/Android/data/"
-                            + getApplicationContext().getPackageName()
-                            + "/Files");
-                    // Create the storage directory if it does not exist
-                    if (! mediaStorageDir.exists()){
-                        if (! mediaStorageDir.mkdirs()){
-                            return null;
-                        }
-                    }
-                    // Create a media file name
-                    String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
-                    File mediaFile;
-                    String mImageName="MI_"+ timeStamp +".jpg";
-                    mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
-                    return mediaFile;
+                    }*/
                 }
             };
             imageReader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
@@ -327,7 +354,7 @@ public class Camera2Activity extends AppCompatActivity {
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
 //                    Toast.makeText(Camera2Activity.this, "captureListener - Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
-//                    createCameraPreview();
+                    createCameraPreview();
 //                    closeCamera();
                     Intent intent = new Intent(Camera2Activity.this, ReviewActivity.class);
                     intent.putExtra("imagePath", file.getPath());
@@ -355,7 +382,6 @@ public class Camera2Activity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
     protected void createCameraPreview(){
         try{
             SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
@@ -426,32 +452,5 @@ public class Camera2Activity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == REQUEST_CAMERA_PERMISSION){
-            if(grantResults[0] == PackageManager.PERMISSION_DENIED){
-                Toast.makeText(this, "Please grant the permission, Closing the app now", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e("App", "onResume");
-        startBackgroundThread();
-        if (textureView.isAvailable()) {
-            openCamera();
-        } else {
-            textureView.setSurfaceTextureListener(textureListener);
-        }
-    }
-    @Override
-    protected void onPause() {
-        Log.e("App", "onPause");
-        closeCamera();
-        stopBackgroundThread();
-        super.onPause();
-    }
 }
