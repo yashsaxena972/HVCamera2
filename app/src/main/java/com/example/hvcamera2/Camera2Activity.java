@@ -14,7 +14,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -37,9 +36,6 @@ import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
-import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -49,12 +45,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -252,6 +245,20 @@ public class Camera2Activity extends AppCompatActivity {
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + "pic.jpg");
         return mediaFile;
     }
+    protected byte[] rotateImage(String cameraFace, byte[] bytes) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes , 0, bytes.length);
+        Matrix matrix = new Matrix();
+        if(cameraFace.equals(CAMERA_BACK)){
+            matrix.postRotate(90);
+        }else{
+            matrix.postRotate(270);
+        }
+//                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
     protected void takePicture(boolean flashStatus) {
         if (cameraDevice == null) {
             Log.e("App", "Camera is null");
@@ -298,15 +305,7 @@ public class Camera2Activity extends AppCompatActivity {
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes , 0, bytes.length);
-                        Matrix matrix = new Matrix();
-                        matrix.postRotate(90);
-//                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
-                        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                        byte[] byteArray = stream.toByteArray();
-                        rotatedBitmap.recycle();
+                        byte[] byteArray = rotateImage(cameraFace, bytes);
 //                        byte[] byteArray;
 //                        int size = bitmap.getRowBytes() * bitmap.getHeight();
 //                        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
@@ -335,17 +334,6 @@ public class Camera2Activity extends AppCompatActivity {
                             output.close();
                         }
                     }
-                    /*File file2 = getOutputMediaFile();
-                    FileOutputStream output2 = null;
-                    try {
-                        output2 = new FileOutputStream(file2);
-                        output2.write(bytes);
-                        output2.close();
-                    } finally {
-                        if (output2 != null) {
-                            output2.close();
-                        }
-                    }*/
                 }
             };
             imageReader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
