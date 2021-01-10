@@ -142,7 +142,6 @@ public class Camera2Activity extends AppCompatActivity {
     }
 
     private void updateTextureViewSize(int viewWidth, int viewHeight) {
-        Log.e("App", "TextureView Width : " + viewWidth + " TextureView Height : " + viewHeight);
         textureView.setLayoutParams(new LinearLayout.LayoutParams(viewWidth, viewHeight));
     }
     public void reopenCamera() {
@@ -239,17 +238,14 @@ public class Camera2Activity extends AppCompatActivity {
             }
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            Log.e("App", rotation+"");
-            int surfaceRotation = ORIENTATIONS.get(rotation);
-            int sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-            Log.e("App" , ""+surfaceRotation + " : " + sensorOrientation);
-//            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
-//            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));
+            /*int surfaceRotation = ORIENTATIONS.get(rotation);
+            int sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);*/
+            /*captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (surfaceRotation + sensorOrientation + 270) % 360);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));*/
             final File file = new File(getCacheDir() + "/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
-                    Log.e("App", "Inside imageReader");
                     Image image = null;
                     try {
                         image = reader.acquireLatestImage();
@@ -330,8 +326,6 @@ public class Camera2Activity extends AppCompatActivity {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Log.e("App", "Inside onCaptureCompleted");
-                    Log.e("App", "CamAct filepath"+ file.getPath());
 //                    Toast.makeText(Camera2Activity.this, "captureListener - Saved:" + file.getPath(), Toast.LENGTH_SHORT).show();
 //                    createCameraPreview();
 //                    closeCamera();
@@ -390,14 +384,12 @@ public class Camera2Activity extends AppCompatActivity {
     }
     private void openCamera(){
         CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-
         try {
             cameraId = cameraManager.getCameraIdList()[Integer.valueOf(cameraFace)];
             CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map!=null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
-            Log.e("APP-ImageDimen", imageDimension +"");
             setAspectRatioTextureView(imageDimension.getHeight(),imageDimension.getWidth());
 
             if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
